@@ -1,0 +1,133 @@
+json (JAVA Script object Notation) : json object is a lightweight  data-interchage formate that is easy for humans to read and write and easy for machines to parse and generate. 
+it is text based formate that is completlely language independent 
+in the json data is represented as key-value pairs, where key are strings and values can be strings, arrays, primitives(numbers, boolens(T/f), NULL), or other json object
+
+
+json object are enclosed in curly brace {} and key value pair is seperate by comma 
+
+
+
+
+{
+  "name": "John Doe",
+  "age": 30,
+  "isStudent": false,
+  "courses": ["Math", "English", "History"]
+}
+
+
+
+{
+  "person": {
+    "name": "Alice",
+    "age": 25,
+    "address": {
+      "city": "Wonderland",
+      "country": "Fictionland"
+    }
+  },
+  "isStudent": false
+}
+
+
+
+    "libraryName": The name of the library.
+    "location": The location or city where the library is situated.
+    "establishedYear": The year the library was established.
+    "isOpen": A boolean indicating whether the library is currently open or closed.
+    "books": An array representing a collection of books in the library.
+        Each book is represented by a JSON object with the following properties:
+            "title": The title of the book.
+            "author": The author of the book.
+            "publicationYear": The year the book was published.
+            "available": A boolean indicating whether the book is currently available or checked out.
+
+
+
+
+{
+
+  "libraryName" : "pavan",
+   "location"   : "bangalore",
+   "EstablishedYear" : 2001,
+    "isopen"   :  True,
+    "books"    : ["ABC"{
+                         "title" : "ddhd",
+                         "author" : "AAA",
+                         "publicationYear" : 1999,
+                         "avaialble" : false
+
+                       }
+                  ,"PQR"{
+			  "title" : "opj",
+                         "author" : "PPP",
+                         "publicationYear" : 1998,
+                         "avaialble" : false
+
+
+                        }
+                 ,"XYZ"{
+
+				"title" : "pas",
+                         "author" : "XXX",
+                         "publicationYear" : 1998,
+                         "avaialble" : True
+                       }
+
+                       ]
+
+}
+
+{
+  "libraryName": "pavan",
+  "location": "bangalore",
+  "EstablishedYear": 2001,
+  "isopen": true,
+  "books": [
+    {
+      "title": "ddhd",
+      "author": "AAA",
+      "publicationYear": 1999,
+      "available": false
+    },
+    {
+      "title": "opj",
+      "author": "PPP",
+      "publicationYear": 1998,
+      "available": false
+    },
+    {
+      "title": "pas",
+      "author": "XXX",
+      "publicationYear": 1998,
+      "available": true
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
