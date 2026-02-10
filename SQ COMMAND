@@ -1,0 +1,209 @@
+
+command format 
+
+
+Bytes 0–3   : CDW0 (Opcode, FUSE, PSDT, CID)
+Bytes 4–7   : Namespace ID
+Bytes 8–15  : Metadata Pointer
+Bytes 16–23 : PRP1 (first buffer address)
+Bytes 24–31 : PRP2 (second buffer or PRP list pointer)
+Bytes 32–35 : CDW10 (command-specific, e.g., LBA low)
+Bytes 36–39 : CDW11 (command-specific, e.g., LBA high)
+Bytes 40–43 : CDW12 (command-specific, e.g., block count)
+Bytes 44–47 : CDW13
+Bytes 48–51 : CDW14
+Bytes 52–55 : CDW15
+Bytes 56–63 : Reserved
+
+
+0x00–0x03 : CDW0 (Opcode, FUSE, PSDT, CID)
+0x04–0x07 : Namespace ID
+0x08–0x0F : Metadata Pointer
+0x10–0x17 : PRP1 (first buffer address)
+0x18–0x1F : PRP2 (second buffer or PRP list pointer)
+0x20–0x23 : CDW10 (command-specific, e.g., LBA low)
+0x24–0x27 : CDW11 (command-specific, e.g., LBA high)
+0x28–0x2B : CDW12 (command-specific, e.g., block count)
+0x2C–0x2F : CDW13
+0x30–0x33 : CDW14
+0x34–0x37 : CDW15
+0x38–0x3F : Reserved
+
+
+
+DWORD0
+
++----------------+------+-----+-----+-------------+
+|      CID       | PSDT | Res | FUSE|   OPCODE    |
++----------------+------+-----+-----+-------------+
+31             16 15   14 13  10 9   8 7          0
+
+
+
+Encoding into DWORD0:
+
+CID (0x1234) → goes into bits 31:16
+PSDT (00b) → bits 15:14
+FUSE (00b) → bits 9:8
+Opcode (0x02) → bits 7:0
+
+0x12340002
+
+
+
+
+Bytes 0–3 (DWORD0) are the “command header.”
+They tell the SSD: what command, how to interpret buffer pointers, and which unique ID to use for completion.
+The rest of the 64‑byte SQE (bytes 4–63) provide namespace, PRP/SGL addresses, and command‑specific parameters.
+
+
+
+
+Bytes 0x04–0x07 (decimal offset 4–7)
+
+Size: 4 bytes (32 bits)
+Field: Namespace Identifier (NSID)
+
+
+What NSID Means
+NVMe devices can expose multiple namespaces.
+A namespace is essentially a separate logical storage space inside the SSD — like independent partitions, each with its own LBA range.
+The NSID field tells the SSD which namespace the command applies to
+
+
+Example :
+Suppose an NVMe SSD has:
+Namespace 1 → 1 TB capacity
+Namespace 2 → 512 GB capacity
+If the driver wants to issue a READ command to Namespace 2:
+It sets NSID = 2 in bytes 0x04–0x07 of the SQE.
+
+
+Key insights 
+NSID is how the SSD knows which logical storage space the command is targeting.
+Without NSID, the SSD wouldn’t know whether to apply the READ/WRITE to Namespace 1, Namespace 2, or another.
+For Admin commands (like Identify), NSID can be set to 0 (meaning “not namespace‑specific”).
+
+🧩 Initialization Phase
+When the NVMe driver first loads, it needs to discover what the SSD supports.
+It issues Admin commands:
+
+Identify Controller → general device info (max queues, features, etc.).
+
+Identify Namespace List → returns a list of all active Namespace IDs (NSIDs).
+
+Identify Namespace (for each NSID) → returns details about that namespace (capacity, sector size, metadata format, etc.).
+
+
+👉 At this point, the driver learns:
+
+How many namespaces exist.
+
+The NSID values (like 1, 2, 3…).
+
+The properties of each namespace.
+
+
+I/O Phase
+Later, when the OS or application issues a READ/WRITE, the driver already knows which namespace to target.
+
+The driver decides which NSID to use based on:
+
+How the OS mounted the namespaces (like separate disks/partitions).
+Which filesystem or partition the application is accessing.
+The driver then inserts the correct NSID into bytes 0x04–0x07 of the 64‑byte command.
+
+👉 The SSD firmware does not decide the NSID. It simply executes the command in the namespace specified by the driver.
+
+
+Example
+During initialization:
+
+Identify Namespace List → returns [1, 2].
+
+Identify Namespace (NSID=1) → 1 TB, 512‑byte sectors.
+
+Identify Namespace (NSID=2) → 512 GB, 4 KB sectors.
+
+Later:
+App writes to /home (mounted on Namespace 2).
+Driver builds WRITE command with NSID=2.
+SSD firmware executes the write in Namespace 2.
+
+
+✅ Key Insight
+Identify commands are used during initialization/discovery, not before every I/O.
+Namespace IDs are assigned by SSD firmware when namespaces are created (via Create Namespace).
+The driver learns NSIDs once and then uses them in all subsequent I/O commands.
+The logic of which NSID to use comes from the OS/filesystem mapping, not from the SSD firmware.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The driver vs. SSD firmware roles, 
+how namespaces are discovered, and how the system decides which namespace to use when multiple are supported.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
